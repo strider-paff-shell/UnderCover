@@ -47,6 +47,7 @@ enable_undercover() {
 	cp -r $CONF_FILES/* ~/.config/
 	[ -f ~/.face ] && mv ~/.face ~/.face.undercover
 	printf ': undercover && export PS1='\''C:${PWD//\//\\\\\}> '\''\n' >> ~/.bashrc
+	#enable call to the print_win_banner function
 	sed -i -e 's/#print_win_banner;/print_win_banner;/g' ~/.bashrc
 
 }
@@ -61,6 +62,7 @@ disable_undercover() {
 		'mv "$1" "$(echo $1 | sed 's/.undercover//')"' _ {} \;
 	[ -f ~/.face.undercover ] && mv ~/.face.undercover ~/.face
 	sed -i -e '/: undercover/d' ~/.bashrc
+	#disable call to the print_win_banner function
 	sed -i -e 's/print_win_banner;/#print_win_banner;/g' ~/.bashrc
 }
 
