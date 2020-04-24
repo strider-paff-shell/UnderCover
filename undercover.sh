@@ -3,15 +3,16 @@
 if [ $(pgrep -u $(whoami) xfconfd\|xfce4-panel | wc -l) -lt 2 ]
 then
 	echo "ERROR: Undercover Mode only works on Xfce desktop" >&2
+	echo "Try running this without root"
 	notify-send -i dialog-warning 'Undercover Mode only works on Xfce desktop'
 	exit 1
 fi
 
-DIR=~/.local/share/kali-undercover/
-SHARE_DIR=/usr/share/kali-undercover/
+DIR=~/.local/share/undercover/
+SHARE_DIR=/usr/share/undercover/
 CONF_FILES=$SHARE_DIR/config/
 XFCE4_DESKTOP_PROFILES=$SHARE_DIR/scripts/xfce4-desktop-profiles.py
-KALI_UNDERCOVER_PROFILE=$SHARE_DIR/kali-undercover-profile.tar.bz
+UNDERCOVER_PROFILE=$SHARE_DIR/undercover-profile.tar.bz
 USER_PROFILE=$DIR/user-profile.tar.bz
 
 mkdir -p $DIR
@@ -19,10 +20,7 @@ mkdir -p $DIR
 # Hide existing notifications
 killall xfce4-notifyd 2> /dev/null
 
-# TODO remove old code block
-# Actual functionality moved to desktopconfig.py
-# Code maintained just in case a previous version of kali-undercover is
-# enabled and previous settings are saved in $DIR/lock
+
 if [ -f $DIR/lock ]
 then
 	mv $DIR/user-panel-profile.tar.bz $USER_PROFILE
@@ -37,7 +35,7 @@ fi
 
 enable_undercover() {
 	$XFCE4_DESKTOP_PROFILES save $USER_PROFILE
-	$XFCE4_DESKTOP_PROFILES load $KALI_UNDERCOVER_PROFILE
+	$XFCE4_DESKTOP_PROFILES load $UNDERCOVER_PROFILE
 	if pgrep -u $(whoami) -x plank > /dev/null
 	then
 		killall plank
@@ -49,6 +47,8 @@ enable_undercover() {
 	cp -r $CONF_FILES/* ~/.config/
 	[ -f ~/.face ] && mv ~/.face ~/.face.undercover
 	printf ': undercover && export PS1='\''C:${PWD//\//\\\\\}> '\''\n' >> ~/.bashrc
+	sed -i -e 's/#print_win_banner;/print_win_banner;/g' ~/.bashrc
+
 }
 
 disable_undercover() {
@@ -61,6 +61,7 @@ disable_undercover() {
 		'mv "$1" "$(echo $1 | sed 's/.undercover//')"' _ {} \;
 	[ -f ~/.face.undercover ] && mv ~/.face.undercover ~/.face
 	sed -i -e '/: undercover/d' ~/.bashrc
+	sed -i -e 's/print_win_banner;/#print_win_banner;/g' ~/.bashrc
 }
 
 if [ -f $USER_PROFILE ]
